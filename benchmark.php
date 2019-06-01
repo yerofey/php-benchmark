@@ -25,15 +25,18 @@ function benchmark(array $array = [])
             continue;
         }
 
+        $params_string = '';
         if (!empty($value_args = $value['args'])) {
             if (!is_array($value_args)) {
                 $value_args = explode(',', $value_args);
             } else {
                 $value_args = [];
             }
+
+            $params_string = $value['args'];
         }
 
-        $iterations = $value['repeat'] ?? 1000000; // 1M runs by default
+        $iterations = !empty($value['repeat']) ? $value['repeat'] : 1000000; // 1M runs by default
         $i = 0;
         $time_started = microtime(true);
 
@@ -46,7 +49,7 @@ function benchmark(array $array = [])
         $time_finished = microtime(true);
         $runtime_total = number_format($time_finished - $time_started, 4, '.', ',');
         $runtime_single = $runtime_total / $iterations;
-        echo 'Benchmark | ' . $rows_count . ': "' . $value_func . '(' . ($value['args'] ?? '') . ')" - ';
+        echo 'Benchmark | ' . $rows_count . ': "' . $value_func . '(' . $params_string . ')" - ';
         echo number_format($runtime_single, 10) . ' s (1); ';
         echo $runtime_total . ' s (' . number_format($iterations, 0, '.', ',') . ')';
         echo PHP_EOL;
