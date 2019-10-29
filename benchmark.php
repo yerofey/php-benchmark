@@ -39,7 +39,6 @@ function benchmark(array $array = [])
         $i = 0;
         $time_started = microtime(true);
 
-
         while ($i <= $iterations) {
 			call_user_func_array($value_func, $value_args ?? []);
             $i++;
@@ -64,7 +63,6 @@ function benchmark(array $array = [])
 	// best result
 	if (count($array) > 1) {
 		$best_key = array_search(min($results), $results);
-		print_r($best_key);
 	}
 
 	echo PHP_EOL;
