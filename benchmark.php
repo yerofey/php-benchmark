@@ -16,6 +16,7 @@ function benchmark(array $array = [])
         ];
     }
 
+	$benchmarks = [];
     $best_key = null;
     $results = [];
     $rows_count = 1;
@@ -25,46 +26,59 @@ function benchmark(array $array = [])
             continue;
         }
 
-        $params_string = '';
-        if (!empty($value_args = $value['args'])) {
+		$value_args = $value['args'] ?? [];
+        if (!empty($value_args)) {
             if (!is_array($value_args)) {
                 $value_args = explode(',', $value_args);
             } else {
                 $value_args = [];
             }
-
-            $params_string = $value['args'];
         }
 
-        $iterations = !empty($value['repeat']) ? $value['repeat'] : 1000000; // 1M runs by default
+        $iterations = $value['repeats'] ?? 10000; // 10K runs by default
         $i = 0;
         $time_started = microtime(true);
 
+
         while ($i <= $iterations) {
-            call_user_func_array($value_func, $value_args);
-            //
+			call_user_func_array($value_func, $value_args ?? []);
             $i++;
         }
 
         $time_finished = microtime(true);
-        $runtime_total = number_format($time_finished - $time_started, 4, '.', ',');
+        $runtime_total = $time_finished - $time_started;
         $runtime_single = $runtime_total / $iterations;
-        echo 'Benchmark | ' . $rows_count . ': "' . $value_func . '(' . $params_string . ')" - ';
-        echo number_format($runtime_single, 10) . ' s (1); ';
-        echo $runtime_total . ' s (' . number_format($iterations, 0, '.', ',') . ')';
-        echo PHP_EOL;
 
+		$benchmarks[$key] = [
+			'id'				=> $rows_count,
+			'func_name' 		=> $value_func,
+			'func_args' 		=> implode(',', $value_args),
+			'runtime_single'	=> number_format($runtime_single, 10, '.', ','),
+			'runtime_total'		=> number_format($runtime_total, 4, '.', ','),
+			'iterations'		=> number_format($iterations, 0, '.', ','),
+		];
         $results[$rows_count] = $runtime_single;
-
         $rows_count++;
     }
 
-    // best result
-    if (count($array) > 1) {
-        $best_key = array_search(min($results), $results);
-        echo 'Benchmark | "' . $array[$best_key - 1]['func'] . '" - the fastest' . PHP_EOL;
-    }
-    echo PHP_EOL;
+	// best result
+	if (count($array) > 1) {
+		$best_key = array_search(min($results), $results);
+	}
+
+	echo PHP_EOL;
+
+	foreach ($benchmarks as $key => $value) {
+		echo 'Benchmark | #' . $value['id'] . ': "' . $value['func_name'] . '(' . $value['func_args'] . ')" - ' . $value['runtime_single'] . 's (1); ' . $value['runtime_total'] . 's (' . $value['iterations'] . ')';
+
+		if ($best_key && $best_key == $key) {
+			echo ' - the fastest!';
+		}
+
+		echo PHP_EOL;
+	}
+
+	echo PHP_EOL;
 }
 
 /**
