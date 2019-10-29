@@ -53,7 +53,7 @@ function benchmark(array $array = [])
 			'func_name' 		=> $value_func,
 			'func_args' 		=> implode(',', $value_args),
 			'runtime_single'	=> number_format($runtime_single, 10, '.', ','),
-			'runtime_total'		=> number_format($runtime_total, 4, '.', ','),
+			'runtime_total'		=> number_format($runtime_total, 10, '.', ','),
 			'iterations'		=> number_format($iterations, 0, '.', ','),
 		];
         $results[$rows_count] = $runtime_single;
