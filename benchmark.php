@@ -64,6 +64,7 @@ function benchmark(array $array = [])
 	// best result
 	if (count($array) > 1) {
 		$best_key = array_search(min($results), $results);
+		print_r($best_key);
 	}
 
 	echo PHP_EOL;
@@ -71,7 +72,7 @@ function benchmark(array $array = [])
 	foreach ($benchmarks as $key => $value) {
 		echo 'Benchmark | #' . $value['id'] . ': "' . $value['func_name'] . '(' . $value['func_args'] . ')" - ' . $value['runtime_single'] . 's (1); ' . $value['runtime_total'] . 's (' . $value['iterations'] . ')';
 
-		if ($best_key && $best_key == $key) {
+		if ($best_key && $best_key == $value['id']) {
 			echo ' - the fastest!';
 		}
 
