@@ -5,29 +5,32 @@
  */
 function benchmark(array $array = [])
 {
-	if (empty($array)) {
-		echo 'Benchmark | Error: empty data' . PHP_EOL;
-		return;
-	}
+    if (empty($array)) {
+        echo 'Benchmark | Error: empty data' . PHP_EOL;
+        return;
+    }
 
-	if (!isMulti($array)) {
-	    $array = [
-	        $array
+    if (!isMulti($array)) {
+        $array = [
+            $array
         ];
     }
 
-	$benchmarks = [];
+    $benchmarks = [];
     $best_key = null;
     $results = [];
     $rows_count = 1;
 
     foreach ($array as $key => $value) {
-        if (empty($value_func = $value['func'])) {
+        if (empty($value_func = $value['function'])) {
             continue;
         }
 
-		$value_args = $value['args'] ?? [];
-        if (!empty($value_args)) {
+        if (empty($value['arguments'])) {
+            $value_args = [];
+        } else {
+            $value_args = $value['arguments'] ?? [];
+
             if (!is_array($value_args)) {
                 $value_args = explode(',', $value_args);
             } else {
@@ -35,12 +38,12 @@ function benchmark(array $array = [])
             }
         }
 
-        $iterations = $value['repeats'] ?? 10000; // 10K runs by default
+        $iterations = $value['iterations'] ?? 10000; // 10K runs by default
         $i = 0;
         $time_started = microtime(true);
 
         while ($i <= $iterations) {
-			call_user_func_array($value_func, $value_args ?? []);
+            call_user_func_array($value_func, $value_args ?? []);
             $i++;
         }
 
@@ -48,36 +51,36 @@ function benchmark(array $array = [])
         $runtime_total = $time_finished - $time_started;
         $runtime_single = $runtime_total / $iterations;
 
-		$benchmarks[$key] = [
-			'id'				=> $rows_count,
-			'func_name' 		=> $value_func,
-			'func_args' 		=> implode(',', $value_args),
-			'runtime_single'	=> number_format($runtime_single, 10, '.', ','),
-			'runtime_total'		=> number_format($runtime_total, 10, '.', ','),
-			'iterations'		=> number_format($iterations, 0, '.', ','),
-		];
+        $benchmarks[$key] = [
+            'id'				=> $rows_count,
+            'func_name' 		=> $value_func,
+            'func_args' 		=> implode(',', $value_args),
+            'runtime_single'	=> number_format($runtime_single, 10, '.', ','),
+            'runtime_total'		=> number_format($runtime_total, 10, '.', ','),
+            'iterations'		=> number_format($iterations, 0, '.', ','),
+        ];
         $results[$rows_count] = $runtime_single;
         $rows_count++;
     }
 
-	// best result
-	if (count($array) > 1) {
-		$best_key = array_search(min($results), $results);
-	}
+    // best result
+    if (count($array) > 1) {
+        $best_key = array_search(min($results), $results);
+    }
 
-	echo PHP_EOL;
+    echo PHP_EOL;
 
-	foreach ($benchmarks as $key => $value) {
-		echo 'Benchmark | #' . $value['id'] . ': "' . $value['func_name'] . '(' . $value['func_args'] . ')" - ' . $value['runtime_single'] . 's (1); ' . $value['runtime_total'] . 's (' . $value['iterations'] . ')';
+    foreach ($benchmarks as $key => $value) {
+        echo 'Benchmark | #' . $value['id'] . ': "' . $value['func_name'] . '(' . $value['func_args'] . ')" - ' . $value['runtime_single'] . 's (1); ' . $value['runtime_total'] . 's (' . $value['iterations'] . ')';
 
-		if ($best_key && $best_key == $value['id']) {
-			echo ' - the fastest!';
-		}
+        if ($best_key && $best_key == $value['id']) {
+            echo ' - the fastest!';
+        }
 
-		echo PHP_EOL;
-	}
+        echo PHP_EOL;
+    }
 
-	echo PHP_EOL;
+    echo PHP_EOL;
 }
 
 /**
