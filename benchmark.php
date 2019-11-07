@@ -11,18 +11,25 @@ function benchmark(array $array = [])
     }
 
     if (!isMulti($array)) {
-        $array = [
-            $array
-        ];
+        $new_array = [];
+
+        foreach ($array as $value) {
+            $new_array[] = $value;
+        }
+
+        $array = $new_array;
     }
 
     $benchmarks = [];
-    $best_key = null;
     $results = [];
     $rows_count = 1;
+    $best_key = null;
+    $worst_key = null;
 
     foreach ($array as $key => $value) {
-        if (empty($value_func = $value['function'])) {
+        $value_func = $value['function'] ?? '';
+
+        if (empty($value_func)) {
             continue;
         }
 
@@ -33,8 +40,6 @@ function benchmark(array $array = [])
 
             if (!is_array($value_args)) {
                 $value_args = explode(',', $value_args);
-            } else {
-                $value_args = [];
             }
         }
 
@@ -54,7 +59,7 @@ function benchmark(array $array = [])
         $benchmarks[$key] = [
             'id'				=> $rows_count,
             'func_name' 		=> $value_func,
-            'func_args' 		=> implode(',', $value_args),
+            'func_args' 		=> '"' . implode('","', array_values($value_args)) . '"',
             'runtime_single'	=> number_format($runtime_single, 10, '.', ','),
             'runtime_total'		=> number_format($runtime_total, 10, '.', ','),
             'iterations'		=> number_format($iterations, 0, '.', ','),
@@ -66,15 +71,20 @@ function benchmark(array $array = [])
     // best result
     if (count($array) > 1) {
         $best_key = array_search(min($results), $results);
+        $worst_key = array_search(max($results), $results);
     }
 
     echo PHP_EOL;
 
     foreach ($benchmarks as $key => $value) {
-        echo 'Benchmark | #' . $value['id'] . ': "' . $value['func_name'] . '(' . $value['func_args'] . ')" - ' . $value['runtime_single'] . 's (1); ' . $value['runtime_total'] . 's (' . $value['iterations'] . ')';
+        echo 'Benchmark | #' . $value['id'] . ': ' . $value['func_name'] . '(' . $value['func_args'] . ') - ' . $value['runtime_single'] . 's (1); ' . $value['runtime_total'] . 's (' . $value['iterations'] . ')';
 
-        if ($best_key && $best_key == $value['id']) {
+        if (isset($best_key) && $best_key == $value['id']) {
             echo ' - the fastest!';
+        }
+
+        if (isset($worst_key) && $worst_key == $value['id']) {
+            echo ' - the slowest!';
         }
 
         echo PHP_EOL;
