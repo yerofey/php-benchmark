@@ -1,8 +1,12 @@
 <?php
 
 /**
- * @param array $array
+ * @author  Yerofey S. <hi@yerofey.ru>
+ * @license MIT
+ * @link    https://github.com/yerofey/php-benchmark
+ * @version 1.0.3
  */
+
 function benchmark(array $array = [])
 {
     if (empty($array)) {
@@ -10,14 +14,8 @@ function benchmark(array $array = [])
         return;
     }
 
-    if (!isMulti($array)) {
-        $new_array = [];
-
-        foreach ($array as $value) {
-            $new_array[] = $value;
-        }
-
-        $array = $new_array;
+    if (!is_multi_array($array)) {
+        $array = [$array];
     }
 
     $benchmarks = [];
@@ -64,14 +62,17 @@ function benchmark(array $array = [])
             'runtime_total'		=> number_format($runtime_total, 10, '.', ','),
             'iterations'		=> number_format($iterations, 0, '.', ','),
         ];
-        $results[$rows_count] = $runtime_single;
+
+        $results[$rows_count] = number_format($runtime_single, 10, '.', '');
         $rows_count++;
     }
 
     // best result
-    if (count($array) > 1) {
-        $best_key = array_search(min($results), $results);
-        $worst_key = array_search(max($results), $results);
+    if ($rows_count > 1) {
+        asort($results);
+        $keys = array_keys($results);
+        $best_key = $keys[0];
+        $worst_key = $keys[count($keys) - 1];
     }
 
     echo PHP_EOL;
@@ -93,14 +94,10 @@ function benchmark(array $array = [])
     echo PHP_EOL;
 }
 
-/**
- * @param $array
- * @return bool
- */
-function isMulti($array) {
-    $rv = array_filter($array,'is_array');
-    if (count($rv) > 0) {
-        return true;
-    }
-    return false;
+// Function to check array is
+// multi-dimensional or not
+function is_multi_array($array)
+{
+    rsort($array);
+    return isset($array[0]) && is_array($array[0]);
 }
